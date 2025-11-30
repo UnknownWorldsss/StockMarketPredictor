@@ -16,12 +16,14 @@ class RsiOscillator(Strategy):
         
         
     def next(self):
-        if crossover(self.rsi, self.upper_bound):
+        if crossover(self.rsi, upper_bound):
             self.position.close()
-        elif crossover(self.lower_bound, self.rsi):
-            self.buy()
+        elif crossover(lower_bound, self.rsi):
+            self.buy(size=0.95)
             
 bt = Backtest(GOOG, RsiOscillator, cash=10000, commission=.002)
 
 stats = bt.run()
-print(stats)
+print (stats)
+
+bt.plot()
