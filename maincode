@@ -4,26 +4,65 @@ from backtesting.test import GOOG
 from backtesting.lib import crossover
 
 import talib
+import warnings
+
+warnings.filterwarnings('ignore', message='.*insufficient margin.*')
+warnings.filterwarnings('ignore', message='.*remain open at the end.*')
 
 print (GOOG)
 
-upper_bound = 70
-lower_bound = 30
+def optim_func(series):
+    duration_years = (series["End"] - series["Start"]).days / 365.25
+    trades_per_year = series["# Trades"] / duration_years if duration_years > 0 else 0
+
+    if trades_per_year < 10:
+        return -1
+    
+    if series["Exposure Time [%]"] == 0:
+        return -1
+    return (series["Equity Final [$]"] / series["Exposure Time [%]"])
 
 class RsiOscillator(Strategy):
+    upper_bound = 70
+    lower_bound = 30
+    rsi_window = 14
+    
     def init(self):
-        self.rsi = self.I(talib.RSI, self.data.Close, 14)
+        self.rsi = self.I(talib.RSI, self.data.Close, self.rsi_window)
         
         
     def next(self):
-        if crossover(self.rsi, upper_bound):
+        if crossover(self.rsi, self.upper_bound):
             self.position.close()
-        elif crossover(lower_bound, self.rsi):
-            self.buy(size=0.95)
+        elif crossover(self.lower_bound, self.rsi):
+            self.buy(size=0.90)
             
 bt = Backtest(GOOG, RsiOscillator, cash=10000, commission=.002)
 
-stats = bt.run()
-print (stats)
+stats, heatmap = bt.optimize(
+    upper_bound=range(50, 85, 5),
+    lower_bound=range(10, 45, 5),
+    rsi_window=range(10, 30, 2),
+    maximize=optim_func,
+    constraint=lambda param: param.upper_bound > param.lower_bound,
+    return_heatmap=True
+)
+print(stats)
+print("\n" + "="*50)
+print("HEATMAP DATA:")
+print("="*50)
+print(heatmap.sort_values(ascending=False).head(20))
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+hm = heatmap.unstack(level='upper_bound')
+plt.figure(figsize=(12, 8))
+sns.heatmap(hm, annot=True, fmt=".0f", cmap="RdYlGn", cbar_kws={'label': 'Optimization Score'})
+plt.title("Optimization Heatmap: Upper vs Lower Bound")
+plt.xlabel("Upper Bound")
+plt.ylabel("Lower Bound & RSI Window")
+plt.tight_layout()
+plt.show()
 
 bt.plot()
