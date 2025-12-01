@@ -1,19 +1,19 @@
 # StockMarketPredictor
 RoadMap:
-**Setup**
+~~**Setup**
  Pick one stock ticker and timeframe (daily data is fine)
  Make a new folder and a fresh notebook (or .py file)
- Install what you need: pandas, numpy, scikit-learn, matplotlib, yfinance
+ Install what you need: pandas, numpy, scikit-learn, matplotlib, yfinance~~
 
-**Get the data**
+~~**Get the data**
  Download daily prices (Open, High, Low, Close, Volume) for 5–10 years
  Save a raw CSV so you always have the original data
- Load it, sort by date, and make sure there are no missing values
+ Load it, sort by date, and make sure there are no missing values~~
 
-**Quick exploration**
+~~**Quick exploration**
  Plot the Close price over time to see the trend
  Make a simple moving average plot (e.g., 20-day vs 100-day)
- Compute daily returns and look at basic stats (mean, std)
+ Compute daily returns and look at basic stats (mean, std)~~
 
 **Goal**
  Choose what to predict: next-day return up/down or next-day close
